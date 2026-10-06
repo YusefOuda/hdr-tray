@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Test
+        run: dotnet test
+
+      - name: Publish
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          dotnet publish hdr-tray.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            "-p:Version=$version" `
+            -o publish
+
+      - name: Package zip
+        run: >
+          Compress-Archive
+          -Path "publish\HdrTray.exe"
+          -DestinationPath "publish\hdr-tray.zip"
+
+      - name: Build installer
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          & "C:\Program Files (x86)\Inno Setup 6\iscc.exe" /DAppVersion=$version installer.iss
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            publish/hdr-tray.zip
+            publish/hdr-tray-setup.exe
+          generate_release_notes: true
