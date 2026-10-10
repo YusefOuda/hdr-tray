@@ -24,6 +24,7 @@ A running instance locks `bin\Debug\...\HdrTray.exe`; exit it from the tray befo
 | `DisplayConfig.cs` | `QueryDisplayConfig` / `DisplayConfigGetDeviceInfo` / `DisplayConfigSetDeviceInfo` interop |
 | `IconRenderer.cs` | "HDR" (orange) / "SDR" (blue-grey; grey when no target) badge at `SystemInformation.SmallIconSize` |
 | `AppSettings.cs` | `%APPDATA%\hdr-tray\settings.json`: `ExcludedMonitors` (device paths), `StartWithWindows`, `CheckForUpdates` |
+| `Log.cs` | Append-only log at `%APPDATA%\hdr-tray\hdr-tray.log` (rolls to `.old.log` at 1 MB). `Program` routes unhandled exceptions here instead of the WinForms Continue/Quit dialog |
 
 ### HDR API notes
 

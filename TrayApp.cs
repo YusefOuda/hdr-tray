@@ -63,6 +63,7 @@ class TrayApp : ApplicationContext
 
         if (state != _shownState)
         {
+            Log.Info($"HDR state: {state} ({string.Join(", ", targets.Select(d => $"{d.Name}={(d.HdrEnabled ? "HDR" : "SDR")}"))})");
             _shownState = state;
             var oldIcon = _tray.Icon;
             _tray.Icon = IconRenderer.ForState(state);
@@ -94,9 +95,14 @@ class TrayApp : ApplicationContext
         }
 
         bool enable = HdrPolicy.ToggleTo(targets);
+        Log.Info($"Turning HDR {(enable ? "on" : "off")}");
         var failed = targets.Where(d => d.HdrEnabled != enable && !DisplayConfig.SetHdr(d, enable)).ToList();
         if (failed.Count > 0)
-            ShowBalloon($"Couldn't turn HDR {(enable ? "on" : "off")}", string.Join(", ", failed.Select(d => d.Name)), ToolTipIcon.Warning);
+        {
+            string names = string.Join(", ", failed.Select(d => d.Name));
+            Log.Error($"Couldn't turn HDR {(enable ? "on" : "off")}: {names}");
+            ShowBalloon($"Couldn't turn HDR {(enable ? "on" : "off")}", names, ToolTipIcon.Warning);
+        }
         Refresh();
     }
 
@@ -209,6 +215,15 @@ class TrayApp : ApplicationContext
             ApplyStartWithWindows(startWithWindows.Checked);
         };
         parent.DropDownItems.Add(startWithWindows);
+
+        parent.DropDownItems.Add(new ToolStripSeparator());
+        var openLog = new ToolStripMenuItem("Open log folder");
+        openLog.Click += (_, _) =>
+        {
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Log.Folder) { UseShellExecute = true }); }
+            catch { }
+        };
+        parent.DropDownItems.Add(openLog);
 
         return parent;
     }
