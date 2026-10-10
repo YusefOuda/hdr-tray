@@ -252,7 +252,7 @@ class TrayApp : ApplicationContext
             key.DeleteValue("hdr-tray", throwOnMissingValue: false);
     }
 
-    void ExitApp()
+    public void ExitApp()
     {
         _timer.Stop();
         _updateTimer.Stop();
